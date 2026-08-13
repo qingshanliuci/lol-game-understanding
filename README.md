@@ -12,7 +12,10 @@
 
 ## 当前入口
 
-- [当前英雄层级](tier-lists/current.md)
+- [当前版本认知总榜](tier-lists/current.md)
+- [当前阵容原型分级](composition-tiers/current.md)
+- [LCK 五位置逐路检验](tier-lists/roles/2026-08-13-LCK.md)
+- [LPL 五位置逐路检验](tier-lists/roles/2026-08-13-LPL.md)
 - [2026-08-13 每日复盘](daily/2026/08/2026-08-13.md)
 - [逆风阵容案例库](comeback-comps/README.md)
 - [评级与阵容分析方法](docs/methodology.md)
@@ -30,7 +33,9 @@ T0 不是“胜率最高”，而是当前赛区和版本下，能够显著改�
 - 领先后的资源转化；
 - 选手熟练度与赛区执行差异。
 
-因此仓库会同时标记 `blind T0`、`counter T0`、`comfort`、`trap`，并允许某个位置暂时没有证据足够的 T0。
+因此仓库会同时标记 `T0`、`T0.5`、`T1`、`Counter T0`、`逆风锚点`、`comfort`、`trap`，并允许某个位置暂时没有证据足够的 T0。
+
+阵容也使用同一套语言，但评的是完整交付链而不是五个英雄的名气：当前将“多点强开 + 第二轮输出”列为基础 T0；“完整反开保排”在对上冲阵时是 Counter T0；“前后排持续 + 反开锚点”和“边线牵制 + 跨图接应”通常为 T0.5，再按 LCK/LPL 修正。
 
 ## 每日更新流程
 
@@ -58,8 +63,15 @@ python3 scripts/validate.py
 <!-- generated-index:start -->
 ## 自动索引
 
+### 阵容原型分级
+- [当前阵容原型分级｜2026-08-13](composition-tiers/current.md)
+
 ### 每日复盘
 - [每日比赛认知｜2026-08-13](daily/2026/08/2026-08-13.md)
+
+### 五位置逐路检验
+- [LPL 五位置逐路检验｜2026-08-13](tier-lists/roles/2026-08-13-LPL.md)
+- [LCK 五位置逐路检验｜2026-08-13](tier-lists/roles/2026-08-13-LCK.md)
 
 ### 层级历史
 - [LPL 英雄层级快照｜2026-08-13](tier-lists/history/2026-08-13-LPL.md)

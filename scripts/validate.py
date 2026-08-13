@@ -13,6 +13,9 @@ REQUIRED = [
     "README.md",
     "docs/methodology.md",
     "tier-lists/current.md",
+    "tier-lists/roles/2026-08-13-LCK.md",
+    "tier-lists/roles/2026-08-13-LPL.md",
+    "composition-tiers/current.md",
     "knowledge-ledger/claims.csv",
 ]
 LEDGER_FIELDS = [
@@ -29,6 +32,7 @@ LEDGER_FIELDS = [
 ]
 ALLOWED_STATUS = {"provisional", "supported", "falsified"}
 ALLOWED_CONFIDENCE = {"low", "medium", "high"}
+REQUIRED_ROLES = {"上路", "打野", "中路", "AD", "辅助"}
 LOCAL_PATH = re.compile(r"/(?:Users|home)/[^\s)`]+")
 MD_LINK = re.compile(r"\[[^]]+\]\(([^)]+)\)")
 
@@ -54,6 +58,28 @@ def main() -> int:
             clean = target.split("#", 1)[0]
             if clean and not (path.parent / clean).resolve().exists():
                 fail(errors, f"broken markdown link: {rel} -> {target}")
+
+    for rel in (
+        "tier-lists/roles/2026-08-13-LCK.md",
+        "tier-lists/roles/2026-08-13-LPL.md",
+    ):
+        path = ROOT / rel
+        if not path.exists():
+            continue
+        text = path.read_text(encoding="utf-8")
+        missing_roles = [role for role in REQUIRED_ROLES if role not in text]
+        if missing_roles:
+            fail(errors, f"role audit incomplete: {rel} missing {missing_roles}")
+        for marker in ("T0", "T0.5", "Counter", "逆风", "陷阱"):
+            if marker not in text:
+                fail(errors, f"role audit missing marker: {rel} -> {marker}")
+
+    comp_tiers = ROOT / "composition-tiers/current.md"
+    if comp_tiers.exists():
+        text = comp_tiers.read_text(encoding="utf-8")
+        for marker in ("T0", "T0.5", "T1", "陷阱", "逆风", "Counter"):
+            if marker not in text:
+                fail(errors, f"composition tiers missing marker: {marker}")
 
     ledger = ROOT / "knowledge-ledger/claims.csv"
     if ledger.exists():
