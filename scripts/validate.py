@@ -1,0 +1,89 @@
+#!/usr/bin/env python3
+"""Validate repository structure, links, ledger fields, and public-file hygiene."""
+
+from __future__ import annotations
+
+import csv
+import re
+import sys
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[1]
+REQUIRED = [
+    "README.md",
+    "docs/methodology.md",
+    "tier-lists/current.md",
+    "knowledge-ledger/claims.csv",
+]
+LEDGER_FIELDS = [
+    "id",
+    "date",
+    "category",
+    "scope",
+    "claim",
+    "status",
+    "confidence",
+    "evidence",
+    "counterevidence",
+    "next_test",
+]
+ALLOWED_STATUS = {"provisional", "supported", "falsified"}
+ALLOWED_CONFIDENCE = {"low", "medium", "high"}
+LOCAL_PATH = re.compile(r"/(?:Users|home)/[^\s)`]+")
+MD_LINK = re.compile(r"\[[^]]+\]\(([^)]+)\)")
+
+
+def fail(errors: list[str], message: str) -> None:
+    errors.append(message)
+
+
+def main() -> int:
+    errors: list[str] = []
+    for rel in REQUIRED:
+        if not (ROOT / rel).is_file():
+            fail(errors, f"missing required file: {rel}")
+
+    for path in ROOT.rglob("*.md"):
+        text = path.read_text(encoding="utf-8")
+        rel = path.relative_to(ROOT)
+        if LOCAL_PATH.search(text):
+            fail(errors, f"local absolute path leaked: {rel}")
+        for target in MD_LINK.findall(text):
+            if target.startswith(("http://", "https://", "mailto:", "#")):
+                continue
+            clean = target.split("#", 1)[0]
+            if clean and not (path.parent / clean).resolve().exists():
+                fail(errors, f"broken markdown link: {rel} -> {target}")
+
+    ledger = ROOT / "knowledge-ledger/claims.csv"
+    if ledger.exists():
+        with ledger.open(encoding="utf-8", newline="") as handle:
+            rows = list(csv.DictReader(handle))
+        fields = list(rows[0].keys()) if rows else []
+        if fields != LEDGER_FIELDS:
+            fail(errors, f"ledger fields mismatch: {fields}")
+        ids: set[str] = set()
+        for number, row in enumerate(rows, start=2):
+            if row["id"] in ids:
+                fail(errors, f"duplicate claim id at row {number}: {row['id']}")
+            ids.add(row["id"])
+            if row["status"] not in ALLOWED_STATUS:
+                fail(errors, f"invalid status at row {number}: {row['status']}")
+            if row["confidence"] not in ALLOWED_CONFIDENCE:
+                fail(errors, f"invalid confidence at row {number}: {row['confidence']}")
+            if not all(row.get(field, "").strip() for field in LEDGER_FIELDS):
+                fail(errors, f"blank ledger field at row {number}")
+
+    if errors:
+        print("VALIDATION FAILED")
+        for error in errors:
+            print(f"- {error}")
+        return 1
+    print("VALIDATION OK")
+    print(f"markdown_files={sum(1 for _ in ROOT.rglob('*.md'))}")
+    print(f"claims={len(rows) if ledger.exists() else 0}")
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())
